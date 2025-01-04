@@ -53,8 +53,32 @@ function TP(P1, place, callback)
     end
 end
 
+-- Function to find the nearest chest
+function FindNearestChest()
+    local closestChest = nil
+    local shortestDistance = math.huge -- Start with a very large number for comparison
+
+    -- Iterate over all islands and chests
+    for _, island in pairs(game.Workspace.Map:GetChildren()) do
+        if island:FindFirstChild("Chests") then
+            for _, chest in pairs(island.Chests:GetChildren()) do
+                if chest:IsA("BasePart") and chest.CanTouch then
+                    local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - chest.Position).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestChest = chest
+                    end
+                end
+            end
+        end
+    end
+
+    return closestChest
+end
+
 -- Auto Chest toggle
 getgenv().AutoChest = false
+getgenv().WaitNew = 0.5
 local AutoChestTG = AutoChestSec:Toggle({
     Name = "Auto Chest (Not sure for work on sea 2 and 3)",
     Default = false,
@@ -63,35 +87,34 @@ local AutoChestTG = AutoChestSec:Toggle({
         if Bool then
             spawn(function()
                 while getgenv().AutoChest do
-                    local foundChest = false
-                    for _, island in pairs(game.Workspace.Map:GetChildren()) do
-                        if island:FindFirstChild("Chests") then
-                            print("Island with chests found:", island.Name)
-                            
-                            for _, chest in pairs(island.Chests:GetChildren()) do
-                                if chest:IsA("BasePart") and chest.CanTouch and getgenv().AutoChest then
-                                    foundChest = true
-                                    Library:Notify({
-                                        Name = "Chest Found",
-                                        Text = "Chest found in "..island.Name.." (Is teleporting)",
-                                        Icon = "rbxassetid://11401835376",
-                                        Duration = 3
-                                    })
-                                    TP(chest.CFrame, island.Name, function()
-                                        wait(0.5) -- Delay after reaching the chest
-                                    end)
-                                end
-                                if not getgenv().AutoChest then break end
-                            end
-                        end
-                        if not getgenv().AutoChest or foundChest then break end
+                    local chest = FindNearestChest()
+                    if chest then
+                        Library:Notify({
+                            Name = "Chest Found",
+                            Text = "Chest found! (Teleporting)",
+                            Icon = "rbxassetid://11401835376",
+                            Duration = 3
+                        })
+                        TP(chest.CFrame, "Island", function()
+                            wait(0.5) -- Delay after reaching the chest
+                        end)
+                    else
+                        print("No chests found. Retrying...")
                     end
-                    if not foundChest then
-                        print("No chests found on any islands. Retrying...")
-                        wait(1) -- Wait before checking all islands again
-                    end
+                    wait(getgenv().WaitNew) -- Wait before searching again
                 end
             end)
         end
     end
 })
+
+local Slider = AutoChestSec:Slider({
+	Name = "Wait per chest",
+	Max = 2,
+	Min = 0.1,
+	Default = 0.5,
+	Callback = function(Number)
+		getgenv().WaitNew = Number
+	end
+})
+
