@@ -1,17 +1,19 @@
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-getgenv().Key = "m9r8t2g4f7a1b6zq0d3"
+
 local success, key = pcall(function()
     return game:HttpGet('https://pastebin.com/raw/fMtF0rta')
 end)
 
 if success then
-
-    print(getgenv().Key)
-    print(key)
+    print("안녕하세요 - Xin Chao - Hello")
 else
     warn("Failed to load key")
+    local player = game.Players. LocalPlayer
+
+
+    local reason = " Wrong Key"
+
+    local message = string.format("You were kicked from this experience"..reason)
+    player:Kick(message)
 end
 
 if getgenv().Key == key then
@@ -36,7 +38,7 @@ local function SendNotification(Name, Content, Image, Time)
         Name = Name,
         Text = Content,
         Icon = Image,
-        Duration = Time
+        Duration = 3
     })
 end
 
@@ -48,6 +50,7 @@ end
 
 local function LoadScript()
     if Settings.AutoLoad then
+        print("Auto Load True")
         SendNotification("Auto-Load Enabled", "Please wait...", "rbxassetid://13328029686", 5)
     else
         SendNotification("Checking Game", "Please wait...", "rbxassetid://13328029686", 5)
