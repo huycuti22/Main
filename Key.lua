@@ -8,7 +8,7 @@ if success then
     if getgenv().Key == key then
         print("OK")
     else
-        print("Wrong Key")
+        print("Wrong")
         local player = game.Players.LocalPlayer
         local reason = "Wrong Key"
         local message = string.format("You were kicked from this experience: %s", reason)
@@ -30,24 +30,21 @@ local Settings = {
 }
 
 -- Read and Apply Settings
-local function LoadSettings()
-    if isfile and readfile and isfile("SigmaHubConfig.txt") then
-        local success, result = pcall(function()
-            return HttpService:JSONDecode(readfile("SigmaHubConfig.txt"))
-        end)
-        if success and type(result) == "table" then
-            Settings = result
-        else
-            warn("Failed to load settings from SigmaHubConfig.txt")
-        end
+if isfile and readfile and isfile("SigmaHubConfig.txt") then
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(readfile("SigmaHubConfig.txt"))
+    end)
+    if success and type(result) == "table" then
+        Settings = result
     else
-        if isfile and writefile then
-            writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
-        end
+        warn("Failed to load settings from SigmaHubConfig.txt")
+    end
+else
+    -- Write default settings if the config file does not exist
+    if isfile and writefile then
+        writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
     end
 end
-
-LoadSettings()
 
 -- Debug: Check AutoLoad
 print("Settings.AutoLoad:", Settings.AutoLoad)
@@ -82,17 +79,11 @@ local function LoadScript()
     end
 
     local GetScript
-    local success, err = pcall(function()
+    pcall(function()
         if game.PlaceId == 2753915549 then
             GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/autochestBF/refs/heads/main/AutoChest.lua", Method = "GET"})
         end
     end)
-
-    if not success then
-        warn("Failed to fetch script:", err)
-        SendNotification("Sigma Hub - Error", "Failed to fetch script.", "rbxassetid://161551681", 5)
-        return
-    end
 
     if GetScript and GetScript.Body and GetScript.Body ~= "404: Not Found" then
         task.wait(math.random(1, 4))
@@ -145,11 +136,14 @@ end
 
 -- Auto Load Check
 if Settings.AutoLoad then
-    SendNotification("Sigma Hub", "Auto Load True, waiting for user settings", "rbxassetid://13328029686", 5)
+    SendNotification("Sigma Hub", "Auto Load True, Wait for you if u want to change the settings", "rbxassetid://13328029686", 5)
     wait(15)
-    print("AutoLoad is enabled. Loading script...")
-    SendNotification("Sigma Hub", "Auto Load True, loading script", "rbxassetid://13328029686", 5)
-    LoadScript()
+    if Settings.AutoLoad then
+        print("AutoLoad is enabled. Loading script...")
+        SendNotification("Sigma Hub", "Auto Load True, Is loading script", "rbxassetid://13328029686", 5)
+        LoadScript()
+    end
+    
 else
     print("AutoLoad is disabled.")
 end
