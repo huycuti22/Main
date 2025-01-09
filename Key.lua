@@ -1,3 +1,4 @@
+-- Key Validation
 local success, key = pcall(function()
     return game:HttpGet('https://pastebin.com/raw/fMtF0rta')
 end)
@@ -9,28 +10,44 @@ if success then
     else
         print("Wrong")
         local player = game.Players.LocalPlayer
-
         local reason = "Wrong Key"
-
         local message = string.format("You were kicked from this experience: %s", reason)
         player:Kick(message)
     end
 else
     warn("Failed to load key")
-    
 end
-
-
 
 -- Library + Variables
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Loco-CTO/UI-Library/main/VisionLibV2/source.lua'))()
 local Request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 local GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
 local HttpService = game:GetService('HttpService')
+
 local Settings = {
     AutoLoad = false,
     LoadedAccounts = {game.Players.LocalPlayer.UserId}
 }
+
+-- Read and Apply Settings
+if isfile and readfile and isfile("SigmaHubConfig.txt") then
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(readfile("SigmaHubConfig.txt"))
+    end)
+    if success and type(result) == "table" then
+        Settings = result
+    else
+        warn("Failed to load settings from SigmaHubConfig.txt")
+    end
+else
+    -- Write default settings if the config file does not exist
+    if isfile and writefile then
+        writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
+    end
+end
+
+-- Debug: Check AutoLoad
+print("Settings.AutoLoad:", Settings.AutoLoad)
 
 -- Utility Functions
 local function SendNotification(Name, Content, Image, Time)
@@ -44,7 +61,12 @@ end
 
 local function UpdateFile()
     if isfile and writefile then
-        writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
+        local success, err = pcall(function()
+            writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
+        end)
+        if not success then
+            warn("Failed to update SigmaHubConfig.txt:", err)
+        end
     end
 end
 
@@ -112,14 +134,10 @@ if writefile and readfile and isfile then
     })
 end
 
--- Config Handling
-if isfile and not isfile("SigmaHubConfig.txt") and writefile then
-    writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
-elseif isfile and readfile("SigmaHubConfig.txt") then
-    Settings = HttpService:JSONDecode(readfile("SigmaHubConfig.txt"))
-end
-
 -- Auto Load Check
 if Settings.AutoLoad then
+    print("AutoLoad is enabled. Loading script...")
     LoadScript()
+else
+    print("AutoLoad is disabled.")
 end
