@@ -1,119 +1,122 @@
-
--- Instances:
-local KeySystem = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local Getkey = Instance.new("TextButton")
-local Submit = Instance.new("TextButton")
-local TextLabel = Instance.new("TextLabel")
-local TextBox = Instance.new("TextBox")
-
--- Properties:
-KeySystem.Name = "KeySystem"
-KeySystem.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-KeySystem.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-Frame.Parent = KeySystem
-Frame.BackgroundColor3 = Color3.fromRGB(27, 27, 27)
-Frame.BackgroundTransparency = 0.200
-Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Frame.BorderSizePixel = 0
-Frame.Position = UDim2.new(0.365288228, 0, 0.315436244, 0)
-Frame.Size = UDim2.new(0, 430, 0, 220)
-
-Getkey.Name = "Getkey"
-Getkey.Parent = Frame
-Getkey.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
-Getkey.BackgroundTransparency = 0.300
-Getkey.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Getkey.BorderSizePixel = 0
-Getkey.Position = UDim2.new(0, 0, 1.06818187, 0)
-Getkey.Size = UDim2.new(0, 179, 0, 48)
-Getkey.Font = Enum.Font.Unknown
-Getkey.Text = "Get Key"
-Getkey.TextColor3 = Color3.fromRGB(255, 255, 255)
-Getkey.TextScaled = true
-Getkey.TextSize = 14.000
-Getkey.TextWrapped = true
-
-Submit.Name = "Submit"
-Submit.Parent = Frame
-Submit.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
-Submit.BackgroundTransparency = 0.300
-Submit.BorderColor3 = Color3.fromRGB(0, 0, 0)
-Submit.BorderSizePixel = 0
-Submit.Position = UDim2.new(0.583720922, 0, 1.06818187, 0)
-Submit.Size = UDim2.new(0, 179, 0, 48)
-Submit.Font = Enum.Font.Unknown
-Submit.Text = "Submit Key"
-Submit.TextColor3 = Color3.fromRGB(255, 255, 255)
-Submit.TextScaled = true
-Submit.TextSize = 14.000
-Submit.TextWrapped = true
-
-TextLabel.Parent = Frame
-TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel.BackgroundTransparency = 1.000
-TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.BorderSizePixel = 0
-TextLabel.Position = UDim2.new(0.146511629, 0, -0.277272731, 0)
-TextLabel.Size = UDim2.new(0, 304, 0, 61)
-TextLabel.Font = Enum.Font.Unknown
-TextLabel.Text = "Sigma Hub - Key System"
-TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel.TextScaled = true
-TextLabel.TextSize = 14.000
-TextLabel.TextWrapped = true
-
-TextBox.Parent = Frame
-TextBox.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
-TextBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
-TextBox.BorderSizePixel = 0
-TextBox.Position = UDim2.new(0.134883717, 0, 0.295454532, 0)
-TextBox.Size = UDim2.new(0, 313, 0, 89)
-TextBox.Font = Enum.Font.SourceSansBold
-TextBox.Text = "dda"
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.TextScaled = true
-TextBox.TextSize = 14.000
-TextBox.TextWrapped = true
-
--- Retrieve key from the URL
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+getgenv().Key = "m9r8t2g4f7a1b6zq0d3"
 local success, key = pcall(function()
     return game:HttpGet('https://pastebin.com/raw/fMtF0rta')
 end)
 
 if success then
-    print("OK")
+
+    print(getgenv().Key)
+    print(key)
 else
     warn("Failed to load key")
 end
 
--- Handle Getkey button click
-Getkey.MouseButton1Click:Connect(function()
-	-- The "SetClipboard" function is not a default Roblox function. We'll create a custom function to mimic it.
-	local function SetClipboard(text)
-		-- Copy to clipboard logic (not native to Roblox, but can mimic with external solutions)
-		print("Clipboard Set:", text)
-	end
-	
-	-- Set the clipboard to the key link
-	SetClipboard("https://link-target.net/1274722/key")
-end)
+if getgenv().Key == key then
+    print("OK")
+else
+    print("Wrong")
+end
 
--- Handle Submit button click
-Submit.MouseButton1Click:Connect(function()
-    if TextBox.Text == key then
-        print("Whitelisted")  
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/huycuti22/autochestBF/refs/heads/main/AutoChest.lua'))()
-        print("Loading")
-        game.Debris:AddItem(KeySystem, 0.2)
-    else
-        print("Not whitelisted")
+-- Library + Variables
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Loco-CTO/UI-Library/main/VisionLibV2/source.lua'))()
+local Request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+local GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+local HttpService = game:GetService('HttpService')
+local Settings = {
+    AutoLoad = false,
+    LoadedAccounts = {game.Players.LocalPlayer.UserId}
+}
+
+-- Utility Functions
+local function SendNotification(Name, Content, Image, Time)
+    Library:Notify({
+        Name = Name,
+        Text = Content,
+        Icon = Image,
+        Duration = Time
+    })
+end
+
+local function UpdateFile()
+    if isfile and writefile and isfile("SigmaHubConfig.txt") then
+        writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
     end
-	-- Validate the key input
-end)
+end
 
+local function LoadScript()
+    if Settings.AutoLoad then
+        SendNotification("Auto-Load Enabled", "Please wait...", "rbxassetid://13328029686", 5)
+    else
+        SendNotification("Checking Game", "Please wait...", "rbxassetid://13328029686", 5)
+    end
 
+    local GetScript
+    if game.PlaceId == 2753915549 then
+        GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/autochestBF/refs/heads/main/AutoChest.lua", Method = "GET"})
+    end
 
+    if GetScript and GetScript.Body and GetScript.Body ~= "404: Not Found" then
+        task.wait(math.random(1, 4))
+        Library:Destroy()
+        loadstring(GetScript.Body)()
+    else
+        SendNotification("Sigma Hub - Error", "Game not supported.", "rbxassetid://161551681", 5)
+    end
+end
 
+-- Notifications
+SendNotification("Sigma Hub", "Loading... Please wait.", "rbxassetid://13328029686", 5)
 
+-- UI Library Setup
+local UILibrary = loadstring(game:HttpGet('https://raw.githubusercontent.com/Loco-CTO/UI-Library/main/VisionLibV2/source.lua'))()
+local Window = UILibrary:Create({
+    Name = "Sigma Hub - Loader",
+    Footer = "By Ghuy",
+    ToggleKey = Enum.KeyCode.RightShift,
+    KeySystem = false,
+    MaxAttempts = 5
+})
+
+local Tab = Window:Tab({
+    Name = "Main",
+    Icon = "rbxassetid://11396131982",
+    Color = Color3.new(1, 0, 0)
+})
+
+local Section1 = Tab:Section({
+    Name = "Main"
+})
+
+-- Buttons and Toggles
+Section1:Button({
+    Name = "Load Script",
+    Callback = function()
+        LoadScript()
+    end
+})
+
+if writefile and readfile and isfile then
+    Section1:Toggle({
+        Name = "Auto Load",
+        Default = Settings.AutoLoad,
+        Callback = function(Bool)
+            Settings.AutoLoad = Bool
+            UpdateFile()
+        end
+    })
+end
+
+-- Config Handling
+if isfile and not isfile("SigmaHubConfig.txt") and writefile then
+    writefile("SigmaHubConfig.txt", HttpService:JSONEncode(Settings))
+elseif isfile and isfile("SigmaHubConfig.txt") then
+    Settings = HttpService:JSONDecode(readfile("SigmaHubConfig.txt"))
+end
+
+-- Auto Load Check
+if Settings.AutoLoad then
+    LoadScript()
+end
