@@ -81,7 +81,7 @@ local function LoadScript()
     local GetScript
     pcall(function()
         if game.PlaceId == 2753915549 then
-            GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/autochestBF/refs/heads/main/AutoChest.lua", Method = "GET"})
+            GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/Main/refs/heads/main/AutoChest.lua", Method = "GET"})
         end
     end)
 
