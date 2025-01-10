@@ -91,13 +91,13 @@ local function checkTeam(player)
 end
 
 local function joinTeam()
-    local npc = game.Workspace.NPCs["Giao hàng"]
+    local npc = game.Workspace.NPCs:FindFirstChild("Giao hàng")
     if npc then
         local proximityPrompt = npc:FindFirstChildOfClass("ProximityPrompt")
         if proximityPrompt then
             proximityPrompt.HoldDuration = 0
         end
-        TP(CFrame.new(831.900146, 19.9371243, -487.379547), 40)
+        TP(npc.PrimaryPart.CFrame) -- Adjust NPC position here if necessary.
 
         local VirtualInputManager = game:GetService("VirtualInputManager")
         VirtualInputManager:SendKeyEvent(true, "E", false, game)
@@ -105,7 +105,20 @@ local function joinTeam()
         VirtualInputManager:SendKeyEvent(false, "E", false, game)
 
         local player = game.Players.LocalPlayer
-        player.CharacterAdded:Wait()
+
+        -- Wait until the team changes to "Giao hàng".
+        local success = false
+        for i = 1, 10 do
+            if checkTeam(player) then
+                success = true
+                break
+            end
+            wait(0.5)
+        end
+
+        if not success then
+            warn("Failed to join the team 'Giao hàng'. Retrying...")
+        end
     else
         warn("NPC for joining team not found.")
     end
@@ -178,12 +191,8 @@ spawn(function()
                     warn("Error: Box or Address not found.")
                 end
             else
-                local join = joinTeam()
-                if join then   
-                    getgenv().AutoGrab = false
-                    wait(2)
-                    getgenv().AutoGrab = true
-                end
+                joinTeam()
+                
             end
         end
         wait(0.1)
