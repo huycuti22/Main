@@ -82,6 +82,8 @@ local function LoadScript()
     pcall(function()
         if game.PlaceId == 2753915549 then
             GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/Main/refs/heads/main/AutoChest.lua", Method = "GET"})
+        elseif game.PlaceId == 18192562963 theb
+            GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/Main/refs/heads/main/cdvn.lua", Method = "GET"})
         end
     end)
 
