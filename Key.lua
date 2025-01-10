@@ -82,7 +82,7 @@ local function LoadScript()
     pcall(function()
         if game.PlaceId == 2753915549 then
             GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/Main/refs/heads/main/AutoChest.lua", Method = "GET"})
-        elseif game.PlaceId == 18192562963 theb
+        elseif game.PlaceId == 18192562963 then
             GetScript = Request({Url = "https://raw.githubusercontent.com/huycuti22/Main/refs/heads/main/cdvn.lua", Method = "GET"})
         end
     end)
@@ -145,7 +145,6 @@ if Settings.AutoLoad then
         SendNotification("Sigma Hub", "Auto Load True, Is loading script", "rbxassetid://13328029686", 5)
         LoadScript()
     end
-    
 else
     print("AutoLoad is disabled.")
 end
