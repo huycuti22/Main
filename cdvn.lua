@@ -97,7 +97,7 @@ local function joinTeam()
         if proximityPrompt then
             proximityPrompt.HoldDuration = 0
         end
-        TP(CFrame.new(831.900146, 19.9371243, -487.379547))
+        TP(CFrame.new(831.900146, 19.9371243, -487.379547), 40)
 
         local VirtualInputManager = game:GetService("VirtualInputManager")
         VirtualInputManager:SendKeyEvent(true, "E", false, game)
@@ -178,7 +178,12 @@ spawn(function()
                     warn("Error: Box or Address not found.")
                 end
             else
-                joinTeam()
+                local join = joinTeam()
+                if join then   
+                    getgenv().AutoGrab = false
+                    wait(2)
+                    getgenv().AutoGrab = true
+                end
             end
         end
         wait(0.1)
