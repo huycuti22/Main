@@ -40,64 +40,44 @@ local Toggle = Section1:Toggle({
 -- Function to teleport to a given CFrame
 local isTeleporting = false
 
-local function randomDelay(min, max)
-    wait(math.random(min * 1000, max * 1000) / 1000)
-end
-
-function TP(targetCFrame)
+function TP(targetCFrame, speed)
     if isTeleporting then return end
+
     isTeleporting = true
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
 
     if humanoidRootPart and typeof(targetCFrame) == "CFrame" then
-        -- Add random intermediate positions
-        local intermediate = targetCFrame.Position + Vector3.new(
-            math.random(-5, 5),
-            math.random(0, 5),
-            math.random(-5, 5)
-        )
+        local distance = (targetCFrame.Position - humanoidRootPart.Position).Magnitude
 
-        local intermediateCFrame = CFrame.new(intermediate)
-
-        -- Tween to intermediate
-        local tween1 = game:GetService("TweenService"):Create(
+        local tween = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new(1, Enum.EasingStyle.Linear),
-            {CFrame = intermediateCFrame}
-        )
-        tween1:Play()
-        tween1.Completed:Wait()
-
-        -- Tween to final destination
-        local tween2 = game:GetService("TweenService"):Create(
-            humanoidRootPart,
-            TweenInfo.new(1, Enum.EasingStyle.Linear),
+            TweenInfo.new(distance / speed, Enum.EasingStyle.Linear),
             {CFrame = targetCFrame}
         )
-        tween2:Play()
-        tween2.Completed:Wait()
+
+        tween:Play()
+        tween.Completed:Wait(1)
     else
         warn("HumanoidRootPart not found or invalid targetCFrame provided.")
     end
-    randomDelay(0.5, 1.5) -- Random delay after teleport
+
     isTeleporting = false
 end
-
 
 local function checkTeam(player)
     return player.Team and player.Team.Name == "Giao hàng"
 end
 
 local function joinTeam()
-    local npc = game.Workspace.NPCs:FindFirstChild("Giao hàng")
+    local npc = game.Workspace.NPCs:FindFirstChild("Giao hàng"):FindFirstChild("npc grab")
     if npc then
-        local proximityPrompt = npc:FindFirstChildOfClass("ProximityPrompt")
+        local proximityPrompt = npc.Parent:FindFirstChildOfClass("ProximityPrompt")
         if proximityPrompt then
             proximityPrompt.HoldDuration = 0
         end
-        TP(npc.PrimaryPart.CFrame) -- Adjust NPC position here if necessary.
+        TP(npc.HumanoidRootPart.CFrame, 40) -- Adjust NPC position here if necessary.
 
         local VirtualInputManager = game:GetService("VirtualInputManager")
         VirtualInputManager:SendKeyEvent(true, "E", false, game)
@@ -124,13 +104,14 @@ local function joinTeam()
     end
 end
 
+
 local function grabBox(defaultLocation, player)
     if not gotbox and defaultLocation then
         local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
         if proximityPrompt then
             proximityPrompt.HoldDuration = 0
         end
-        TP(defaultLocation.CFrame)
+        TP(defaultLocation.CFrame, 40)
         wait(1)
 
         local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -157,18 +138,20 @@ spawn(function()
                 end
 
                 local box = backpack:FindFirstChild("Box")
-                if box and box:FindFirstChild("Address") then
+                if box and box:FindFirstChild("Address") and gotbox then
                     local addressValue = box.Address.Value
                     local realPlace = game.Workspace.Jobs.Delivery:FindFirstChild(addressValue)
 
-                    if realPlace and realPlace:IsA("BasePart") and gotbox then
-                        TP(CFrame.new(798.446533, 22.1844006, -522.543762))
-                        wait(0.5)
-
-                        TP(realPlace.CFrame)
-                        print("Delivering to:", addressValue)
-
+                    if realPlace and realPlace:IsA("BasePart") then
+                        TP(CFrame.new(798.446533, 22.1844006, -522.543762), 40)
+                        wait(4)
                         player.Character.Humanoid:EquipTool(box)
+                        TP(realPlace.CFrame, 50)
+                        
+                        print("Delivering to:", addressValue)
+                        wait(2)
+
+                        
 
                         local proximityPrompt = realPlace:FindFirstChildOfClass("ProximityPrompt")
                         if proximityPrompt then
@@ -191,8 +174,8 @@ spawn(function()
                     warn("Error: Box or Address not found.")
                 end
             else
-                joinTeam()
-                
+                joinTeam() 
+                wait(2)
             end
         end
         wait(0.1)
