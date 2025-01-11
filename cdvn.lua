@@ -1,5 +1,3 @@
-
-
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
@@ -24,12 +22,12 @@ local Keybind = Tabs.Main:AddKeybind("Keybind", {
     Mode = "Toggle", -- Always, Toggle, Hold
     Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
 
-    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    -- Occurs when the keybind is clicked, Value is true/false
     Callback = function(Value)
         print("Keybind clicked!", Value)
     end,
 
-    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
+    -- Occurs when the keybind itself is changed, New is a KeyCode Enum OR a UserInputType Enum
     ChangedCallback = function(New)
         print("Keybind changed!", New)
     end
@@ -82,7 +80,26 @@ end
 local function checkTeam(player, team)
     return player.Team and player.Team.Name == team
 end
+local function interactWithPrompt(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        prompt.HoldDuration = 0
 
+        -- Check for mobile or PC
+        local UserInputService = game:GetService("UserInputService")
+        if UserInputService.TouchEnabled then
+            -- Mobile touch interaction
+            prompt:InputHoldBegin()
+            wait(0.1)
+            prompt:InputHoldEnd()
+        else
+            -- PC key press simulation
+            local VirtualInputManager = game:GetService("VirtualInputManager")
+            VirtualInputManager:SendKeyEvent(true, "E", false, game)
+            wait(0.1)
+            VirtualInputManager:SendKeyEvent(false, "E", false, game)
+        end
+    end
+end
 local function joinTeam(team)
     print(team)
     local npcname 
@@ -94,16 +111,9 @@ local function joinTeam(team)
     local npc = game.Workspace.NPCs:FindFirstChild(team):FindFirstChild(npcname)
     if npc then
         local proximityPrompt = npc.Parent:FindFirstChildOfClass("ProximityPrompt")
-        if proximityPrompt then
-            proximityPrompt.HoldDuration = 0
-        end
         TP(npc.HumanoidRootPart.CFrame, 40) -- Adjust NPC position here if necessary.
-
-        local VirtualInputManager = game:GetService("VirtualInputManager")
-        VirtualInputManager:SendKeyEvent(true, "E", false, game)
-        wait(0.1)
-        VirtualInputManager:SendKeyEvent(false, "E", false, game)
-
+        wait(1)
+        interactWithPrompt(proximityPrompt)
         local player = game.Players.LocalPlayer
 
         -- Wait until the team changes to "Giao hàng".
@@ -128,16 +138,12 @@ end
 local function grabBox(defaultLocation, player)
     if not gotbox and defaultLocation then
         local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
-        if proximityPrompt then
-            proximityPrompt.HoldDuration = 0
-        end
+
         TP(defaultLocation.CFrame * CFrame.new(0,3,0), 40)
         wait(1)
+        interactWithPrompt(proximityPrompt)
+        wait(1)
 
-        local VirtualInputManager = game:GetService("VirtualInputManager")
-        VirtualInputManager:SendKeyEvent(true, "E", false, game)
-        wait(0.1)
-        VirtualInputManager:SendKeyEvent(false, "E", false, game)
         gotbox = true
     end
     return gotbox
@@ -178,12 +184,7 @@ spawn(function()
                         if proximityPrompt then
                             proximityPrompt.HoldDuration = 0
                         end
-
-                        local VirtualInputManager = game:GetService("VirtualInputManager")
-                        VirtualInputManager:SendKeyEvent(true, "E", false, game)
-                        wait(0.1)
-                        VirtualInputManager:SendKeyEvent(false, "E", false, game)
-
+                        interactWithPrompt(proximityPrompt)
                         gotbox = false
                         wait(3)
 
