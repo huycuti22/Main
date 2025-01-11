@@ -39,7 +39,7 @@ local Toggle = Section1:Toggle({
 	end
 })
 local Toggle2 = Section1:Toggle({
-	Name = "Auto Log - Not Work",
+	Name = "Auto Log",
 	Default = false,
 	Callback = function(Bool) 
 		print("Auto Log toggled:", Bool)
@@ -162,12 +162,12 @@ spawn(function()
 
                     if realPlace and realPlace:IsA("BasePart") then
                         TP(CFrame.new(798.446533, 22.1844006, -522.543762 )* CFrame.new(0,3,0), 40)
-                        wait(3.5)
+                        wait(4)
                         player.Character.Humanoid:EquipTool(box)
                         TP(realPlace.CFrame * CFrame.new(0,3,0), 50)
                         
                         print("Delivering to:", addressValue)
-                        wait(4)
+                        wait(2)
 
                         
 
