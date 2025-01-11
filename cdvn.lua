@@ -142,7 +142,7 @@ local function grabBox(defaultLocation, player)
         TP(defaultLocation.CFrame * CFrame.new(0,3,0), 40)
         wait(1)
         interactWithPrompt(proximityPrompt)
-        wait(1)
+        wait(0.5)
 
         gotbox = true
     end
@@ -171,7 +171,7 @@ spawn(function()
 
                     if realPlace and realPlace:IsA("BasePart") then
                         TP(CFrame.new(798.446533, 22.1844006, -522.543762 )* CFrame.new(0,3,0), 40)
-                        wait(4)
+                        wait(1.5)
                         player.Character.Humanoid:EquipTool(box)
                         TP(realPlace.CFrame * CFrame.new(0,3,0), 50)
                         
@@ -186,7 +186,7 @@ spawn(function()
                         end
                         interactWithPrompt(proximityPrompt)
                         gotbox = false
-                        wait(3)
+                        wait(1.5)
 
                         
                     else
