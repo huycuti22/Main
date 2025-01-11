@@ -43,8 +43,6 @@ local Slider = Tabs.Main:AddSlider("Slider", {
 
 -- GUI Setup
 local screenGui
-
--- Create the ScreenGui
 if not game.CoreGui:FindFirstChild("Sigma Hub") then
     screenGui = Instance.new("ScreenGui")
     screenGui.Name = "Sigma Hub"
@@ -57,52 +55,49 @@ if not game.CoreGui:FindFirstChild("Sigma Hub") then
     imageButtonC.Parent = screenGui
 end
 
--- Find the frame with more children
-local frames = {}
-for _, child in ipairs(game.CoreGui:FindFirstChild("ScreenGui"):GetChildren()) do
-    if child:IsA("Frame") and child.Name == "Frame" then
-        table.insert(frames, child)
+-- Function to find frame with the most children
+local function findFrameWithMostChildren()
+    local frames = {}
+    for _, child in ipairs(game.CoreGui:FindFirstChild("ScreenGui"):GetChildren()) do
+        if child:IsA("Frame") and child.Name == "Frame" then
+            table.insert(frames, child)
+        end
     end
+
+    local frameWithMoreChildren = nil
+    local maxChildren = -1
+
+    for _, frame in ipairs(frames) do
+        local childrenCount = #frame:GetChildren()
+        if childrenCount > maxChildren then
+            maxChildren = childrenCount
+            frameWithMoreChildren = frame
+        end
+    end
+    return frameWithMoreChildren
 end
 
-local frameWithMoreChildren
-local maxChildren = -1
+local frameWithMoreChildren = findFrameWithMostChildren()
+if frameWithMoreChildren then
+    local imageButton = game.CoreGui:FindFirstChild("Sigma Hub"):FindFirstChild("ImageButton")
 
-for _, frame in ipairs(frames) do
-    local childrenCount = #frame:GetChildren()
-    if childrenCount > maxChildren then
-        maxChildren = childrenCount
-        frameWithMoreChildren = frame
-    end
-end
-
-print("Frame with more children:", frameWithMoreChildren, "Children count:", maxChildren)
-
-local imageButton = game.CoreGui:FindFirstChild("Sigma Hub"):FindFirstChild("ImageButton")
-
--- Toggle frame visibility on button click
-imageButton.MouseButton1Click:Connect(function()
-    if frameWithMoreChildren then
+    -- Toggle frame visibility on button click
+    imageButton.MouseButton1Click:Connect(function()
         frameWithMoreChildren.Visible = not frameWithMoreChildren.Visible
-    else
-        print("No frame found with more children!")
-    end
-end)
+    end)
+end
 
-
--- Refined teleportation with sky tween
+-- Teleportation function with sky tween
 local isTeleporting = false
-
 function TP(targetCFrame, speed)
     if isTeleporting then return end
-
     isTeleporting = true
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
 
     if humanoidRootPart and typeof(targetCFrame) == "CFrame" then
-        local skyHeight = 40 -- Height to tween up to the sky
+        local skyHeight = 40
         local startCFrame = humanoidRootPart.CFrame
         local skyCFrame = CFrame.new(startCFrame.Position.X, startCFrame.Position.Y + skyHeight, startCFrame.Position.Z)
         local destinationCFrame = CFrame.new(targetCFrame.Position.X, targetCFrame.Position.Y + skyHeight, targetCFrame.Position.Z)
@@ -116,7 +111,7 @@ function TP(targetCFrame, speed)
         tweenToSky:Play()
         tweenToSky.Completed:Wait()
 
-        -- Tween in the sky toward the target
+        -- Tween to the target position in the sky
         local tweenToTargetSky = game:GetService("TweenService"):Create(
             humanoidRootPart,
             TweenInfo.new((destinationCFrame.Position - skyCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
@@ -125,7 +120,7 @@ function TP(targetCFrame, speed)
         tweenToTargetSky:Play()
         tweenToTargetSky.Completed:Wait()
 
-        -- Lower down to the target
+        -- Tween down to the final position
         local tweenToTargetGround = game:GetService("TweenService"):Create(
             humanoidRootPart,
             TweenInfo.new((targetCFrame.Position - destinationCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
@@ -140,9 +135,12 @@ function TP(targetCFrame, speed)
     isTeleporting = false
 end
 
+-- Function to check if player is on the right team
 local function checkTeam(player, team)
     return player.Team and player.Team.Name == team
 end
+
+-- Function to interact with a proximity prompt
 local function interactWithPrompt(prompt)
     if prompt and prompt:IsA("ProximityPrompt") then
         prompt.HoldDuration = 0
@@ -160,6 +158,7 @@ local function interactWithPrompt(prompt)
     end
 end
 
+-- Function to join a team
 local function joinTeam(team)
     local npcname = team == "Giao hàng" and "npc grab" or "ToiLaThanhTuan"
     local npc = game.Workspace.NPCs:FindFirstChild(team):FindFirstChild(npcname)
@@ -178,6 +177,7 @@ local function joinTeam(team)
     end
 end
 
+-- Function to grab the box from its location
 local function grabBox(defaultLocation, player)
     if not gotbox and defaultLocation then
         local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
@@ -190,6 +190,7 @@ local function grabBox(defaultLocation, player)
     return true
 end
 
+-- Main loop to automate actions
 spawn(function()
     local player = game.Players.LocalPlayer
     local job = game.Workspace:FindFirstChild("Jobs")
