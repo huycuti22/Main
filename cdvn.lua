@@ -68,49 +68,47 @@ function TP(targetCFrame, speed)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
 
     if humanoidRootPart and typeof(targetCFrame) == "CFrame" then
-        local skyHeight = 100 -- Độ cao khi bay lên
+        local skyHeight = 40 -- Height to tween up to the sky
         local startCFrame = humanoidRootPart.CFrame
-        local skyStartCFrame = CFrame.new(startCFrame.Position.X, startCFrame.Position.Y + skyHeight, startCFrame.Position.Z)
-        local destinationSkyCFrame = CFrame.new(targetCFrame.Position.X, targetCFrame.Position.Y + skyHeight, targetCFrame.Position.Z)
+        local skyCFrame = CFrame.new(startCFrame.Position.X, startCFrame.Position.Y + skyHeight, startCFrame.Position.Z)
+        local destinationCFrame = CFrame.new(targetCFrame.Position.X, targetCFrame.Position.Y + skyHeight, targetCFrame.Position.Z)
 
-        -- **Di chuyển lên độ cao ngay lập tức**
-        local tweenToSkyStart = game:GetService("TweenService"):Create(
+        -- Tween up to the sky
+        local tweenToSky = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new((skyStartCFrame.Position - startCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
-            {CFrame = skyStartCFrame}
+            TweenInfo.new((skyCFrame.Position - startCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
+            {CFrame = skyCFrame}
         )
-        tweenToSkyStart:Play()
-        tweenToSkyStart.Completed:Wait()
+        tweenToSky:Play()
+        tweenToSky.Completed:Wait()
 
-        -- **Di chuyển theo phương ngang ở trên trời**
+        -- Tween in the sky toward the target
         local tweenToTargetSky = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new((destinationSkyCFrame.Position - skyStartCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
-            {CFrame = destinationSkyCFrame}
+            TweenInfo.new((destinationCFrame.Position - skyCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
+            {CFrame = destinationCFrame}
         )
         tweenToTargetSky:Play()
         tweenToTargetSky.Completed:Wait()
 
-        -- **Hạ xuống vị trí mục tiêu**
+        -- Lower down to the target
         local tweenToTargetGround = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new((targetCFrame.Position - destinationSkyCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
+            TweenInfo.new((targetCFrame.Position - destinationCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
             {CFrame = targetCFrame}
         )
         tweenToTargetGround:Play()
         tweenToTargetGround.Completed:Wait()
     else
-        warn("HumanoidRootPart không tồn tại hoặc targetCFrame không hợp lệ.")
+        warn("HumanoidRootPart not found or invalid targetCFrame provided.")
     end
 
     isTeleporting = false
 end
 
-
 local function checkTeam(player, team)
     return player.Team and player.Team.Name == team
 end
-
 local function interactWithPrompt(prompt)
     if prompt and prompt:IsA("ProximityPrompt") then
         prompt.HoldDuration = 0
@@ -132,10 +130,10 @@ local function joinTeam(team)
     local npcname = team == "Giao hàng" and "npc grab" or "ToiLaThanhTuan"
     local npc = game.Workspace.NPCs:FindFirstChild(team):FindFirstChild(npcname)
     if npc then
-        local proximityPrompt1 = npc:FindFirstChildOfClass("ProximityPrompt")
+        local proximityPrompt = npc:FindFirstChildOfClass("ProximityPrompt")
         TP(npc.HumanoidRootPart.CFrame, 40)
         wait(1)
-        interactWithPrompt(proximityPrompt1)
+        interactWithPrompt(proximityPrompt)
 
         local player = game.Players.LocalPlayer
         repeat
