@@ -163,7 +163,7 @@ local function joinTeam(team)
     local npcname = team == "Giao hàng" and "npc grab" or "ToiLaThanhTuan"
     local npc = game.Workspace.NPCs:FindFirstChild(team):FindFirstChild(npcname)
     if npc then
-        local proximityPrompt = npc:FindFirstChildOfClass("ProximityPrompt")
+        local proximityPrompt = npc.Parent:FindFirstChildOfClass("ProximityPrompt")
         TP(npc.HumanoidRootPart.CFrame, 40)
         wait(1)
         interactWithPrompt(proximityPrompt)
