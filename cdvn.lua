@@ -120,7 +120,7 @@ local function grabBox(defaultLocation, player)
         VirtualInputManager:SendKeyEvent(false, "E", false, game)
         gotbox = true
     end
-    return gotbox
+    return true
 end
 
 spawn(function()
