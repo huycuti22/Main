@@ -5,7 +5,7 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 local Window = Fluent:CreateWindow({
     Title = "Sigma Hub - Cong Dong Viet Nam",
     SubTitle = "By ghuy4800",
-    TabWidth = 160,
+    TabWidth = 140,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
     Theme = "Dark",
@@ -89,7 +89,7 @@ end
 
 -- Teleportation function with sky tween
 local isTeleporting = false
-function TP(targetCFrame, speed)
+function TP(targetCFrame)
     if isTeleporting then return end
     isTeleporting = true
     local player = game.Players.LocalPlayer
@@ -105,7 +105,7 @@ function TP(targetCFrame, speed)
         -- Tween up to the sky
         local tweenToSky = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new((skyCFrame.Position - startCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
+            TweenInfo.new((skyCFrame.Position - startCFrame.Position).Magnitude / getgenv().TweenSpeed, Enum.EasingStyle.Linear),
             {CFrame = skyCFrame}
         )
         tweenToSky:Play()
@@ -114,7 +114,7 @@ function TP(targetCFrame, speed)
         -- Tween to the target position in the sky
         local tweenToTargetSky = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new((destinationCFrame.Position - skyCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
+            TweenInfo.new((destinationCFrame.Position - skyCFrame.Position).Magnitude / getgenv().TweenSpeed, Enum.EasingStyle.Linear),
             {CFrame = destinationCFrame}
         )
         tweenToTargetSky:Play()
@@ -123,7 +123,7 @@ function TP(targetCFrame, speed)
         -- Tween down to the final position
         local tweenToTargetGround = game:GetService("TweenService"):Create(
             humanoidRootPart,
-            TweenInfo.new((targetCFrame.Position - destinationCFrame.Position).Magnitude / speed, Enum.EasingStyle.Linear),
+            TweenInfo.new((targetCFrame.Position - destinationCFrame.Position).Magnitude / getgenv().TweenSpeed, Enum.EasingStyle.Linear),
             {CFrame = targetCFrame}
         )
         tweenToTargetGround:Play()
@@ -158,13 +158,29 @@ local function interactWithPrompt(prompt)
     end
 end
 
+
+-- Function to grab the box from its location
+local function grabBox(defaultLocation, player)
+    if not gotbox and defaultLocation then
+        local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
+        if proximityPrompt then
+            TP(defaultLocation.CFrame)
+            wait(1)
+            interactWithPrompt(proximityPrompt)
+            gotbox = true
+            wait(1.5)
+        end
+    end
+    return gotbox
+end
+
 -- Function to join a team
 local function joinTeam(team)
     local npcname = team == "Giao hàng" and "npc grab" or "ToiLaThanhTuan"
     local npc = game.Workspace.NPCs:FindFirstChild(team):FindFirstChild(npcname)
     if npc then
         local proximityPrompt = npc.Parent:FindFirstChildOfClass("ProximityPrompt")
-        TP(npc.HumanoidRootPart.CFrame, 40)
+        TP(npc.HumanoidRootPart.CFrame)
         wait(1)
         interactWithPrompt(proximityPrompt)
 
@@ -172,22 +188,11 @@ local function joinTeam(team)
         repeat
             wait(0.5)
         until checkTeam(player, team)
+
+        -- Continue auto grab after joining the tea
     else
         warn("NPC for joining team not found.")
     end
-end
-
--- Function to grab the box from its location
-local function grabBox(defaultLocation, player)
-    if not gotbox and defaultLocation then
-        local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
-        TP(defaultLocation.CFrame, 60)
-        wait(1)
-        interactWithPrompt(proximityPrompt)
-        gotbox = true
-        wait(1.5)
-    end
-    return true
 end
 
 -- Main loop to automate actions
@@ -198,12 +203,14 @@ spawn(function()
     local defaultLocation = delivery and delivery.Box:FindFirstChild("Part")
 
     while true do
+        -- Check if AutoGrab is enabled
         if getgenv().AutoGrab then
+            -- If not in the "Giao hàng" team, join it
             if not checkTeam(player, "Giao hàng") then
                 joinTeam("Giao hàng")
-                repeat
-                    wait(0.5)
-                until checkTeam(player, "Giao hàng")
+                getgenv().AutoGrab = false
+                task.wait(0.5)
+                getgenv().AutoGrab = true
             end
 
             if not gotbox and defaultLocation then
@@ -211,23 +218,33 @@ spawn(function()
                 wait(1)
             end
 
+            -- Process box if grabbed
             local box = player.Backpack:FindFirstChild("Box")
             if box and box:FindFirstChild("Address") and gotbox then
                 local addressValue = box.Address.Value
                 local realPlace = delivery:FindFirstChild(addressValue)
+
+                -- If a valid destination is found, deliver the box
                 if realPlace and realPlace:IsA("BasePart") then
-                    TP(CFrame.new(798.446533, 22.1844006, -522.543762), 60)
+                    -- Teleport to the delivery location
+                    TP(CFrame.new(798.446533, 22.1844006, -522.543762))
                     wait(1.5)
+
+                    -- Equip the box to the player character
                     if player.Character and player.Character:FindFirstChild("Humanoid") then
                         player.Character.Humanoid:EquipTool(box)
                     end
-                    TP(realPlace.CFrame, 60)
-                    wait(1)
+
+                    -- Teleport to the final destination
+                    TP(realPlace.CFrame)
+                    wait(3)
+
+                    -- Interact with the delivery prompt
                     local proximityPrompt = realPlace:FindFirstChildOfClass("ProximityPrompt")
                     if proximityPrompt then
                         interactWithPrompt(proximityPrompt)
-                        gotbox = false
-                        wait(1)
+                        gotbox = false -- Reset box status after delivery
+                        wait(2)
                     else
                         warn("Delivery prompt not found.")
                     end
@@ -236,6 +253,6 @@ spawn(function()
                 end
             end
         end
-        wait(0.1)
+        wait(0.1) -- Small delay to prevent overloading the loop
     end
 end)
