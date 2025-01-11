@@ -26,7 +26,9 @@ local Section1 = Tab1:Section({
 })
 
 getgenv().AutoGrab = false
+getgenv().AutoLog = false
 local gotbox = false
+local gotTree = false
 
 local Toggle = Section1:Toggle({
 	Name = "Auto Grab",
@@ -34,6 +36,14 @@ local Toggle = Section1:Toggle({
 	Callback = function(Bool) 
 		print("Auto Grab toggled:", Bool)
         getgenv().AutoGrab = Bool
+	end
+})
+local Toggle2 = Section1:Toggle({
+	Name = "Auto Log - Not Work",
+	Default = false,
+	Callback = function(Bool) 
+		print("Auto Log toggled:", Bool)
+        getgenv().AutoLog = Bool
 	end
 })
 
@@ -66,12 +76,19 @@ function TP(targetCFrame, speed)
     isTeleporting = false
 end
 
-local function checkTeam(player)
-    return player.Team and player.Team.Name == "Giao hàng"
+local function checkTeam(player, team)
+    return player.Team and player.Team.Name == team
 end
 
-local function joinTeam()
-    local npc = game.Workspace.NPCs:FindFirstChild("Giao hàng"):FindFirstChild("npc grab")
+local function joinTeam(team)
+    print(team)
+    local npcname 
+    if team == "Giao hàng" then
+        npcname = "npc grab"
+    else
+        npcname = "ToiLaThanhTuan"
+    end
+    local npc = game.Workspace.NPCs:FindFirstChild(team):FindFirstChild(npcname)
     if npc then
         local proximityPrompt = npc.Parent:FindFirstChildOfClass("ProximityPrompt")
         if proximityPrompt then
@@ -111,7 +128,7 @@ local function grabBox(defaultLocation, player)
         if proximityPrompt then
             proximityPrompt.HoldDuration = 0
         end
-        TP(defaultLocation.CFrame, 40)
+        TP(defaultLocation.CFrame * CFrame.new(0,3,0), 40)
         wait(1)
 
         local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -120,7 +137,7 @@ local function grabBox(defaultLocation, player)
         VirtualInputManager:SendKeyEvent(false, "E", false, game)
         gotbox = true
     end
-    return true
+    return gotbox
 end
 
 spawn(function()
@@ -132,24 +149,25 @@ spawn(function()
 
     while true do
         if getgenv().AutoGrab then
-            if checkTeam(player) then
+            if checkTeam(player, "Giao hàng") then
                 if not gotbox and defaultLocation then
                     grabBox(defaultLocation, player)
+                    print(gotbox)
                 end
 
                 local box = backpack:FindFirstChild("Box")
-                if box and box:FindFirstChild("Address") and gotbox then
+                if box and box:FindFirstChild("Address") and gotbox == true then
                     local addressValue = box.Address.Value
                     local realPlace = game.Workspace.Jobs.Delivery:FindFirstChild(addressValue)
 
                     if realPlace and realPlace:IsA("BasePart") then
-                        TP(CFrame.new(798.446533, 22.1844006, -522.543762), 40)
-                        wait(4)
+                        TP(CFrame.new(798.446533, 22.1844006, -522.543762 )* CFrame.new(0,3,0), 40)
+                        wait(3.5)
                         player.Character.Humanoid:EquipTool(box)
-                        TP(realPlace.CFrame, 50)
+                        TP(realPlace.CFrame * CFrame.new(0,3,0), 50)
                         
                         print("Delivering to:", addressValue)
-                        wait(2)
+                        wait(4)
 
                         
 
@@ -171,13 +189,79 @@ spawn(function()
                         warn("Error: Destination not found.")
                     end
                 else
-                    warn("Error: Box or Address not found.")
+                    wait(1)
                 end
             else
-                joinTeam() 
+                joinTeam("Giao hàng") 
                 wait(2)
             end
-        end
+        elseif getgenv().AutoLog then
+                -- Teleport to initial position
+                TP(CFrame.new(1612.82666, 22.8966408, -310.416016), 40)
+                wait(2)
+            
+                -- Check if the player is on the correct team
+                if checkTeam(player, "Khai thác gỗ") then
+                    local args = {[1] = "eue",[2] = "R\195\172u"}
+                    game:GetService("ReplicatedStorage"):WaitForChild("KnitPackages"):WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.7.0"):WaitForChild("knit"):WaitForChild("Services"):WaitForChild("InventoryService"):WaitForChild("RE"):WaitForChild("updateInventory"):FireServer(unpack(args)) 
+            
+                    -- Ensure the required tool is in the inventory
+                    local tool = backpack:FindFirstChild("Rìu")
+                    if tool then
+                        -- Equip the tool
+                        player.Character.Humanoid:EquipTool(tool)
+            
+                        -- Loop through trees to find eligible ones for logging
+                        local TreeFD = game.Workspace.Jobs.Trees
+                        for _, tree in ipairs(TreeFD:GetChildren()) do
+                            if tree.Name == "Tree" and not tree.Cooldown.Value and not tree.isCutting.Value then
+                                -- Teleport to the tree
+                                TP(tree.Prompt.CFrame, 40)
+                                wait(1)
+            
+                                local proximityPrompt = tree.Prompt:FindFirstChildOfClass("ProximityPrompt")
+                                if proximityPrompt then
+                                    proximityPrompt.HoldDuration = 0
+            
+                                    -- Simulate key press to interact
+                                    local VirtualInputManager = game:GetService("VirtualInputManager")
+                                    VirtualInputManager:SendKeyEvent(true, "E", false, game)
+                                    wait(0.1)
+                                    VirtualInputManager:SendKeyEvent(false, "E", false, game)
+            
+                                    print("Logged tree successfully:", tree.Name)
+            
+                                    -- Process log clones
+                                    for _, log in pairs(tree.LogClones:GetChildren()) do
+                                        if log:IsA("Model") then
+                                            local logPrompt = log.Trunk:FindFirstChildOfClass("ProximityPrompt")
+                                            if logPrompt then
+                                                logPrompt.HoldDuration = 0
+                                                TP(log.Trunk.CFrame, 40)
+            
+                                                VirtualInputManager:SendKeyEvent(true, "E", false, game)
+                                                wait(0.1)
+                                                VirtualInputManager:SendKeyEvent(false, "E", false, game)
+                                                wait(1)
+                                            end
+                                        end
+                                    end
+            
+                                    wait(2) -- Allow cooldown before processing the next tree
+                                end
+                            end
+                        end
+                    else
+                        warn("Tool 'Rìu' not found in backpack.")
+                    end
+                else
+                    -- If not on the correct team, attempt to join
+                    joinTeam("Khai thác gỗ")
+                    wait(2)
+                end
+            end
+            
+        
         wait(0.1)
     end
 end)
