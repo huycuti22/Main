@@ -1,51 +1,54 @@
-local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Loco-CTO/UI-Library/main/VisionLibV2/source.lua'))()
 
-Window = Library:Create({
-	Name = "Sigma Hub - Cong Dong Viet Nam",
-	Footer = "By ghuy4800",
-	ToggleKey = Enum.KeyCode.RightShift,
-	LoadedCallback = function()
-		Window:TaskBarOnly(true)
-	end,
-	ToggledRelativeYOffset = 0
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "Sigma Hub - Cong Dong Viet Nam",
+    SubTitle = "By ghuy4800",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
-local Tab1 = Window:Tab({
-	Name = "Main",
-	Icon = "rbxassetid://11396131982",
-	Color = Color3.new(1, 0, 0)
-})
-local Tab2 = Window:Tab({
-	Name = "Info",
-	Icon = "rbxassetid://11396131982",
-	Color = Color3.new(1, 0, 0)
-})
+--Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+local Keybind = Tabs.Main:AddKeybind("Keybind", {
+    Title = "KeyBind",
+    Mode = "Toggle", -- Always, Toggle, Hold
+    Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
 
-local Section1 = Tab1:Section({
-	Name = "Main Farm"
-})
+    -- Occurs when the keybind is clicked, Value is `true`/`false`
+    Callback = function(Value)
+        print("Keybind clicked!", Value)
+    end,
 
+    -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
+    ChangedCallback = function(New)
+        print("Keybind changed!", New)
+    end
+})
 getgenv().AutoGrab = false
 getgenv().AutoLog = false
 local gotbox = false
 local gotTree = false
 
-local Toggle = Section1:Toggle({
-	Name = "Auto Grab",
-	Default = false,
-	Callback = function(Bool) 
-		print("Auto Grab toggled:", Bool)
-        getgenv().AutoGrab = Bool
-	end
-})
-local Toggle2 = Section1:Toggle({
-	Name = "Auto Log",
-	Default = false,
-	Callback = function(Bool) 
-		print("Auto Log toggled:", Bool)
-        getgenv().AutoLog = Bool
-	end
-})
+
+local Options = Fluent.Options
+
+local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = false })
+Toggle:OnChanged(function(t)
+    print(t)
+    getgenv().AutoGrab = t
+end)
+
+
 
 -- Function to teleport to a given CFrame
 local isTeleporting = false
