@@ -44,6 +44,7 @@ local Slider = Tabs.Main:AddSlider("Slider", {
 -- GUI Setup
 local screenGui
 
+-- Create the ScreenGui
 if not game.CoreGui:FindFirstChild("Sigma Hub") then
     screenGui = Instance.new("ScreenGui")
     screenGui.Name = "Sigma Hub"
@@ -55,6 +56,39 @@ if not game.CoreGui:FindFirstChild("Sigma Hub") then
     imageButtonC.Size = UDim2.new(0, 75, 0, 75)
     imageButtonC.Parent = screenGui
 end
+
+-- Find the frame with more children
+local frames = {}
+for _, child in ipairs(game.CoreGui:FindFirstChild("ScreenGui"):GetChildren()) do
+    if child:IsA("Frame") and child.Name == "Frame" then
+        table.insert(frames, child)
+    end
+end
+
+local frameWithMoreChildren
+local maxChildren = -1
+
+for _, frame in ipairs(frames) do
+    local childrenCount = #frame:GetChildren()
+    if childrenCount > maxChildren then
+        maxChildren = childrenCount
+        frameWithMoreChildren = frame
+    end
+end
+
+print("Frame with more children:", frameWithMoreChildren, "Children count:", maxChildren)
+
+local imageButton = game.CoreGui:FindFirstChild("Sigma Hub"):FindFirstChild("ImageButton")
+
+-- Toggle frame visibility on button click
+imageButton.MouseButton1Click:Connect(function()
+    if frameWithMoreChildren then
+        frameWithMoreChildren.Visible = not frameWithMoreChildren.Visible
+    else
+        print("No frame found with more children!")
+    end
+end)
+
 
 -- Refined teleportation with sky tween
 local isTeleporting = false
