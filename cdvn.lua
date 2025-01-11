@@ -12,10 +12,15 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
+
+getgenv().AutoGrab = false
+getgenv().AutoLog = false
+local gotbox = false
+local gotTree = false
+
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 local Keybind = Tabs.Main:AddKeybind("Keybind", {
     Title = "KeyBind",
@@ -32,19 +37,66 @@ local Keybind = Tabs.Main:AddKeybind("Keybind", {
         print("Keybind changed!", New)
     end
 })
-getgenv().AutoGrab = false
-getgenv().AutoLog = false
-local gotbox = false
-local gotTree = false
-
 
 local Options = Fluent.Options
 
 local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = false })
+
 Toggle:OnChanged(function(t)
     print(t)
     getgenv().AutoGrab = t
 end)
+
+local screenGui
+
+-- Create the ScreenGui
+if not game.CoreGui:FindFirstChild("Sigma Hub") then
+    screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "Sigma Hub"
+    screenGui.Parent = game.CoreGui
+
+    local imageButtonC = Instance.new("ImageButton")
+    imageButtonC.Image = "rbxassetid://133753729929737"
+    imageButtonC.Position = UDim2.new(0.157, 0, 0.367, 0)
+    imageButtonC.Size = UDim2.new(0, 75, 0, 75)
+    imageButtonC.Parent = screenGui
+end
+
+-- Find the frame with more children
+local frames = {}
+for _, child in ipairs(game.CoreGui:FindFirstChild("ScreenGui"):GetChildren()) do
+    if child:IsA("Frame") and child.Name == "Frame" then
+        table.insert(frames, child)
+    end
+end
+
+local frameWithMoreChildren
+local maxChildren = -1
+
+for _, frame in ipairs(frames) do
+    local childrenCount = #frame:GetChildren()
+    if childrenCount > maxChildren then
+        maxChildren = childrenCount
+        frameWithMoreChildren = frame
+    end
+end
+
+print("Frame with more children:", frameWithMoreChildren, "Children count:", maxChildren)
+
+local imageButton = game.CoreGui:FindFirstChild("Sigma Hub"):FindFirstChild("ImageButton")
+
+-- Toggle frame visibility on button click
+imageButton.MouseButton1Click:Connect(function()
+    if frameWithMoreChildren then
+        frameWithMoreChildren.Visible = not frameWithMoreChildren.Visible
+    else
+        print("No frame found with more children!")
+    end
+end)
+
+
+
+
 
 
 
@@ -139,7 +191,7 @@ local function grabBox(defaultLocation, player)
     if not gotbox and defaultLocation then
         local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
 
-        TP(defaultLocation.CFrame * CFrame.new(0,3,0), 40)
+        TP(defaultLocation.CFrame , 60)
         wait(1)
         interactWithPrompt(proximityPrompt)
         gotbox = true
@@ -186,7 +238,7 @@ spawn(function()
                     print("Found delivery location:", realPlace.Name)
             
                     -- Teleport to the shipping place
-                    TP(CFrame.new(798.446533, 22.1844006, -522.543762), 40)
+                    TP(CFrame.new(798.446533, 22.1844006, -522.543762), 60)
                     print("Teleported to shipping place")
                     wait(1.5)
             
@@ -198,7 +250,7 @@ spawn(function()
                         warn("Humanoid not found")
                     end
             
-                    TP(realPlace.CFrame, 50)
+                    TP(realPlace.CFrame, 60)
                     print("Teleported to delivery location")
                     wait(1)
             
