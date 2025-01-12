@@ -15,12 +15,14 @@ local Window = Fluent:CreateWindow({
 getgenv().AutoGrab = false
 getgenv().AutoLog = false
 getgenv().TweenSpeed = 100
+getgenv().AntiAfk = false
 local gotbox = false
 local status = "Idle"
 
 -- Tabs and Options
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Webhook = Window:AddTab({ Title = "🔴 Webhook", Icon = "" }),
     Status = Window:AddTab({ Title = "Status", Icon = "" })
 }
 local Options = Fluent.Options
@@ -34,6 +36,150 @@ Tabs.Status:AddParagraph({
     Title = "Farm Status"..status,
     Content = "Farm Status: "..status
 })
+
+
+
+Tabs.Main:AddButton({
+    Title = "Anti Afk",
+    Description = "Very important button",
+    Callback = function()
+        Window:Dialog({
+            Title = "Title",
+            Content = "This is a dialog",
+            Buttons = {
+                {
+                    Title = "Confirm",
+                    Callback = function()
+                        getgenv().AntiAfk = true
+                        print("Anti-AFK has been enabled.")
+                    end
+                },
+                {
+                    Title = "Cancel",
+                    Callback = function()
+                        print("Cancelled the dialog.")
+                    end
+                }
+            }
+        })
+    end
+})
+
+-- Ensure a clean loop by using task.spawn
+task.spawn(function()
+    while true do
+        if getgenv().AntiAfk then
+            local vu = game:GetService("VirtualUser")
+            vu:CaptureController()
+            vu:ClickButton2(Vector2.new())
+            print("Anti-AFK action performed.")
+        end
+        wait(10) -- Ensure a delay to avoid overloading
+    end
+end)
+local function sendwebhook()
+    
+end
+getgenv().WebhookLink = ""
+getgenv().AutoWeb = false
+
+-- Function to send a webhook
+function sendwebhook(content)
+    if getgenv().WebhookLink == "" then
+        warn("No webhook link provided.")
+        return
+    end
+
+    local HttpService = game:GetService("HttpService")
+    local webhookUrl = getgenv().WebhookLink
+
+    local data = {
+        event = "playerJoined",
+        player = game.Players.LocalPlayer.Name,
+        time = os.time(),
+    }
+
+    local jsonData = HttpService:JSONEncode(data)
+
+    local success, response = pcall(function()
+        return HttpService:PostAsync(webhookUrl, jsonData, Enum.HttpContentType.ApplicationJson)
+    end)
+
+    if success then
+        print("Custom webhook sent successfully!")
+    else
+        warn("Failed to send webhook: " .. response)
+    end
+
+end
+
+
+-- UI Input to set the webhook URL
+local Input = Tabs.Webhook:AddInput("Input", {
+    Title = "Webhook Link",
+    Default = "",
+    Numeric = false,
+    Finished = false,
+    Placeholder = "Enter your webhook link here...",
+    Callback = function(Value)
+        getgenv().WebhookLink = Value
+    end
+})
+
+-- Toggle for enabling/disabling auto webhook
+local ToggleAutoWebhook = Tabs.Webhook:AddToggle("Auto Webhook", {
+    Title = "Enable Auto Webhook",
+    Default = false
+})
+ToggleAutoWebhook:OnChanged(function(isEnabled)
+    getgenv().AutoWeb = isEnabled
+
+    if isEnabled then
+        print("Auto webhook enabled.")
+        -- Start the auto webhook loop in a coroutine
+        spawn(function()
+            while getgenv().AutoWeb do
+                local player = game.Players.LocalPlayer
+                local level = player:FindFirstChild("stats") and player.stats:FindFirstChild("Level") and player.stats.Level.Value or "N/A"
+                local vnd = player:FindFirstChild("VND") and player.VND:FindFirstChild("Level") and player.VND.Level.Value or "N/A"
+
+                sendwebhook("Your levels now are: " .. level .. " | VND is: " .. vnd)
+                wait(15) -- Wait 15 seconds between each webhook
+            end
+        end)
+    else
+        print("Auto webhook disabled.")
+    end
+end)
+
+-- Button to test the webhook
+Tabs.Webhook:AddButton({
+    Title = "Test Webhook",
+    Description = "Send a test webhook.",
+    Callback = function()
+        Window:Dialog({
+            Title = "Send test webhook",
+            Content = "Do you want to send a test webhook?",
+            Buttons = {
+                {
+                    Title = "Confirm",
+                    Callback = function()
+                        sendwebhook("This is a test webhook.")
+                    end
+                },
+                {
+                    Title = "Cancel",
+                    Callback = function()
+                        print("Test webhook cancelled.")
+                    end
+                }
+            }
+        })
+    end
+})
+
+
+
 local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = false })
 
 Toggle:OnChanged(function(t)
@@ -55,8 +201,12 @@ local Slider = Tabs.Main:AddSlider("Slider", {
     end
 })
 
+
+
+
 -- GUI Setup
 local screenGui
+
 if not game.CoreGui:FindFirstChild("Sigma Hub") then
     screenGui = Instance.new("ScreenGui")
     screenGui.Name = "Sigma Hub"
