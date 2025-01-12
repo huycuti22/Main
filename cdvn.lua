@@ -177,13 +177,11 @@ end
 local function grabBox(defaultLocation, player)
     if not gotbox and defaultLocation then
         local proximityPrompt = defaultLocation:FindFirstChildOfClass("ProximityPrompt")
-        if proximityPrompt then
-            TP(defaultLocation.CFrame)
-            wait(1)
-            interactWithPrompt(proximityPrompt)
-            gotbox = true
-            wait(1.5)
-        end
+        TP(defaultLocation.CFrame)
+        wait(1)
+        interactWithPrompt(proximityPrompt)
+        gotbox = true
+        wait(1.5)
     end
     return gotbox
 end
@@ -202,6 +200,9 @@ local function joinTeam(team)
         repeat
             wait(0.5)
         until checkTeam(player, team)
+        getgenv().AutoGrab = false
+        task.wait(2)
+        getgenv().AutoGrab = true
 
         -- Continue auto grab after joining the tea
     else
@@ -215,8 +216,6 @@ spawn(function()
     while true do
         -- Check if AutoGrab is enabled
         if getgenv().AutoGrab then
-            TP(CFrame.new(798.446533, 22.1844006, -522.543762))
-            wait(1)
             local player = game.Players.LocalPlayer
             local job = game.Workspace:FindFirstChild("Jobs")
             local delivery = job and job:FindFirstChild("Delivery")
@@ -225,12 +224,9 @@ spawn(function()
             -- If not in the "Giao hàng" team, join it
             if not checkTeam(player, "Giao hàng") then
                 joinTeam("Giao hàng")
-                getgenv().AutoGrab = false
-                task.wait(0.5)
-                getgenv().AutoGrab = true
             end
 
-            if not gotbox and defaultLocation then
+            if not gotbox then
                 gotbox = grabBox(defaultLocation, player)
                 wait(2)
             end
