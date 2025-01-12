@@ -1,7 +1,9 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-
+local Request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+local GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+local HttpService = game:GetService('HttpService')
 local Window = Fluent:CreateWindow({
     Title = "Sigma Hub - Cong Dong Viet Nam",
     SubTitle = "By ghuy4800",
@@ -12,21 +14,40 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-getgenv().AutoGrab = false
-getgenv().AutoLog = false
-getgenv().TweenSpeed = 100
-getgenv().AntiAfk = false
+-- Add new settings for WebhookLink and AutoWeb
+local Settings = {
+    AutoGrab = false,
+    TweenSpeed = 70,
+    AntiAfk = false,
+    WebhookLink = "",  -- Add WebhookLink to config
+    AutoWeb = false,   -- Add AutoWeb to config
+    LoadedAccounts = {game.Players.LocalPlayer.UserId}
+}
+
+-- Function to update the configuration file
+local function UpdateFile()
+    if isfile and writefile and isfile("SigmaHubConfigCDVN.txt") then
+        writefile("SigmaHubConfigCDVN.txt", HttpService:JSONEncode(Settings))
+    end
+end
+
+-- Ensure settings are set in the global environment
+getgenv().AutoGrab = Settings.AutoGrab
+getgenv().TweenSpeed = Settings.TweenSpeed
+getgenv().AntiAfk = Settings.AntiAfk
+getgenv().WebhookLink = Settings.WebhookLink
+getgenv().AutoWeb = Settings.AutoWeb
+
 local gotbox = false
 local status = "Idle"
 
 -- Tabs and Options
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Webhook = Window:AddTab({ Title = "🔴 Webhook", Icon = "" }),
+    Webhook = Window:AddTab({ Title = "🔴Webhook", Icon = "" }),
     Status = Window:AddTab({ Title = "Status", Icon = "" })
 }
 local Options = Fluent.Options
-
 
 Tabs.Status:AddParagraph({
     Title = "Lv",
@@ -36,8 +57,6 @@ Tabs.Status:AddParagraph({
     Title = "Farm Status"..status,
     Content = "Farm Status: "..status
 })
-
-
 
 Tabs.Main:AddButton({
     Title = "Anti Afk",
@@ -52,6 +71,8 @@ Tabs.Main:AddButton({
                     Callback = function()
                         getgenv().AntiAfk = true
                         print("Anti-AFK has been enabled.")
+                        Settings.AntiAfk = true  -- Update the setting in the config
+                        UpdateFile()  -- Save the changes
                     end
                 },
                 {
@@ -77,14 +98,8 @@ task.spawn(function()
         wait(10) -- Ensure a delay to avoid overloading
     end
 end)
-local function sendwebhook()
-    
-end
-getgenv().WebhookLink = ""
-getgenv().AutoWeb = false
 
--- Function to send a webhook
-function sendwebhook(content)
+local function sendwebhook(content)
     if getgenv().WebhookLink == "" then
         warn("No webhook link provided.")
         return
@@ -110,9 +125,7 @@ function sendwebhook(content)
     else
         warn("Failed to send webhook: " .. response)
     end
-
 end
-
 
 -- UI Input to set the webhook URL
 local Input = Tabs.Webhook:AddInput("Input", {
@@ -123,6 +136,8 @@ local Input = Tabs.Webhook:AddInput("Input", {
     Placeholder = "Enter your webhook link here...",
     Callback = function(Value)
         getgenv().WebhookLink = Value
+        Settings.WebhookLink = Value  -- Update the setting in the config
+        UpdateFile()  -- Save the changes
     end
 })
 
@@ -133,6 +148,8 @@ local ToggleAutoWebhook = Tabs.Webhook:AddToggle("Auto Webhook", {
 })
 ToggleAutoWebhook:OnChanged(function(isEnabled)
     getgenv().AutoWeb = isEnabled
+    Settings.AutoWeb = isEnabled  -- Update the setting in the config
+    UpdateFile()  -- Save the changes
 
     if isEnabled then
         print("Auto webhook enabled.")
@@ -178,17 +195,19 @@ Tabs.Webhook:AddButton({
     end
 })
 
-
-
+-- AutoGrab Toggle
 local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = false })
 
 Toggle:OnChanged(function(t)
     getgenv().AutoGrab = t
+    Settings.AutoGrab = t  -- Update the setting in the config
+    UpdateFile()  -- Save the changes
     if status == "Idle" then
         status = "Auto Grab"
     end
 end)
 
+-- Tween Speed Slider
 local Slider = Tabs.Main:AddSlider("Slider", {
     Title = "Tween Speed",
     Description = "Change your tween speed, recommended from 40 to 150",
@@ -198,11 +217,10 @@ local Slider = Tabs.Main:AddSlider("Slider", {
     Rounding = 1,
     Callback = function(Value)
         getgenv().TweenSpeed = Value
+        Settings.TweenSpeed = Value  -- Update the setting in the config
+        UpdateFile()  -- Save the changes
     end
 })
-
-
-
 
 -- GUI Setup
 local screenGui
@@ -298,8 +316,6 @@ function TP(targetCFrame)
 
     isTeleporting = false
 end
-
--- Function to check if player is on the right team
 local function checkTeam(player, team)
     return player.Team and player.Team.Name == team
 end
@@ -359,10 +375,8 @@ local function joinTeam(team)
         warn("NPC for joining team not found.")
     end
 end
-
 -- Main loop to automate actions
 spawn(function()
-    
     while true do
         -- Check if AutoGrab is enabled
         if getgenv().AutoGrab then
@@ -419,3 +433,15 @@ spawn(function()
         wait(0.1) -- Small delay to prevent overloading the loop
     end
 end)
+
+-- Check if the configuration file exists
+if isfile and not isfile("SigmaHubConfigCDVN.txt") and writefile then
+    writefile("SigmaHubConfigCDVN.txt", HttpService:JSONEncode(Settings))
+elseif isfile and isfile("SigmaHubConfigCDVN.txt") then
+    Settings = HttpService:JSONDecode(readfile("SigmaHubConfigCDVN.txt"))
+    getgenv().AutoGrab = Settings.AutoGrab
+    getgenv().TweenSpeed = Settings.TweenSpeed
+    getgenv().AntiAfk = Settings.AntiAfk
+    getgenv().WebhookLink = Settings.WebhookLink
+    getgenv().AutoWeb = Settings.AutoWeb
+end
