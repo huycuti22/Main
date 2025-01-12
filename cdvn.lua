@@ -14,27 +14,41 @@ local Window = Fluent:CreateWindow({
 
 getgenv().AutoGrab = false
 getgenv().AutoLog = false
-getgenv().TweenSpeed = 50
+getgenv().TweenSpeed = 100
 local gotbox = false
+local status = "Idle"
 
 -- Tabs and Options
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Status = Window:AddTab({ Title = "Status", Icon = "" })
 }
 local Options = Fluent.Options
 
+
+Tabs.Status:AddParagraph({
+    Title = "Lv",
+    Content = "Lv. "..game.Players.LocalPlayer.stats.Level.Value
+})
+Tabs.Status:AddParagraph({
+    Title = "Farm Status"..status,
+    Content = "Farm Status: "..status
+})
 local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = false })
 
 Toggle:OnChanged(function(t)
     getgenv().AutoGrab = t
+    if status == "Idle" then
+        status = "Auto Grab"
+    end
 end)
 
 local Slider = Tabs.Main:AddSlider("Slider", {
     Title = "Tween Speed",
-    Description = "Change your tween speed, recommended from 40 to 70",
-    Default = 50,
+    Description = "Change your tween speed, recommended from 40 to 150",
+    Default = 70,
     Min = 40,
-    Max = 100,
+    Max = 500,
     Rounding = 1,
     Callback = function(Value)
         getgenv().TweenSpeed = Value
@@ -127,7 +141,7 @@ function TP(targetCFrame)
             {CFrame = targetCFrame}
         )
         tweenToTargetGround:Play()
-        tweenToTargetGround.Completed:Wait()
+        tweenToTargetGround.Completed:Wait(1)
     else
         warn("HumanoidRootPart not found or invalid targetCFrame provided.")
     end
@@ -197,14 +211,17 @@ end
 
 -- Main loop to automate actions
 spawn(function()
-    local player = game.Players.LocalPlayer
-    local job = game.Workspace:FindFirstChild("Jobs")
-    local delivery = job and job:FindFirstChild("Delivery")
-    local defaultLocation = delivery and delivery.Box:FindFirstChild("Part")
-
+    
     while true do
         -- Check if AutoGrab is enabled
         if getgenv().AutoGrab then
+            TP(CFrame.new(798.446533, 22.1844006, -522.543762))
+            wait(1)
+            local player = game.Players.LocalPlayer
+            local job = game.Workspace:FindFirstChild("Jobs")
+            local delivery = job and job:FindFirstChild("Delivery")
+            local defaultLocation = delivery and delivery.Box:FindFirstChild("Part")
+
             -- If not in the "Giao hàng" team, join it
             if not checkTeam(player, "Giao hàng") then
                 joinTeam("Giao hàng")
@@ -215,7 +232,7 @@ spawn(function()
 
             if not gotbox and defaultLocation then
                 gotbox = grabBox(defaultLocation, player)
-                wait(1)
+                wait(2)
             end
 
             -- Process box if grabbed
@@ -228,7 +245,7 @@ spawn(function()
                 if realPlace and realPlace:IsA("BasePart") then
                     -- Teleport to the delivery location
                     TP(CFrame.new(798.446533, 22.1844006, -522.543762))
-                    wait(1.5)
+                    wait(2)
 
                     -- Equip the box to the player character
                     if player.Character and player.Character:FindFirstChild("Humanoid") then
