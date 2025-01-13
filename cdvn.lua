@@ -40,11 +40,23 @@ getgenv().AutoWeb = Settings.AutoWeb
 
 local gotbox = false
 local status = "Idle"
+if isfile and not isfile("SigmaHubConfigCDVN.txt") and writefile then
+    writefile("SigmaHubConfigCDVN.txt", HttpService:JSONEncode(Settings))
+elseif isfile and isfile("SigmaHubConfigCDVN.txt") then
+    Settings = HttpService:JSONDecode(readfile("SigmaHubConfigCDVN.txt"))
+    print("SigmaHubConfigCDVN loaded")
+    print(Settings.AutoGrab)
+    getgenv().AutoGrab = Settings.AutoGrab
+    getgenv().TweenSpeed = Settings.TweenSpeed
+    getgenv().AntiAfk = Settings.AntiAfk
+    getgenv().WebhookLink = Settings.WebhookLink
+    getgenv().AutoWeb = Settings.AutoWeb
+end
 
 -- Tabs and Options
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Webhook = Window:AddTab({ Title = "🔴Webhook", Icon = "" }),
+    Webhook = Window:AddTab({ Title = "🔴 Webhook", Icon = "" }),
     Status = Window:AddTab({ Title = "Status", Icon = "" })
 }
 local Options = Fluent.Options
@@ -130,7 +142,7 @@ end
 -- UI Input to set the webhook URL
 local Input = Tabs.Webhook:AddInput("Input", {
     Title = "Webhook Link",
-    Default = "",
+    Default = Settings.WebhookLink,
     Numeric = false,
     Finished = false,
     Placeholder = "Enter your webhook link here...",
@@ -144,7 +156,7 @@ local Input = Tabs.Webhook:AddInput("Input", {
 -- Toggle for enabling/disabling auto webhook
 local ToggleAutoWebhook = Tabs.Webhook:AddToggle("Auto Webhook", {
     Title = "Enable Auto Webhook",
-    Default = false
+    Default = Settings.AutoWeb
 })
 ToggleAutoWebhook:OnChanged(function(isEnabled)
     getgenv().AutoWeb = isEnabled
@@ -196,7 +208,7 @@ Tabs.Webhook:AddButton({
 })
 
 -- AutoGrab Toggle
-local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = false })
+local Toggle = Tabs.Main:AddToggle("Auto Grab", {Title = "Grab", Default = Settings.AutoGrab })
 
 Toggle:OnChanged(function(t)
     getgenv().AutoGrab = t
@@ -211,7 +223,7 @@ end)
 local Slider = Tabs.Main:AddSlider("Slider", {
     Title = "Tween Speed",
     Description = "Change your tween speed, recommended from 40 to 150",
-    Default = 70,
+    Default = Settings.TweenSpeed,
     Min = 40,
     Max = 500,
     Rounding = 1,
@@ -434,14 +446,3 @@ spawn(function()
     end
 end)
 
--- Check if the configuration file exists
-if isfile and not isfile("SigmaHubConfigCDVN.txt") and writefile then
-    writefile("SigmaHubConfigCDVN.txt", HttpService:JSONEncode(Settings))
-elseif isfile and isfile("SigmaHubConfigCDVN.txt") then
-    Settings = HttpService:JSONDecode(readfile("SigmaHubConfigCDVN.txt"))
-    getgenv().AutoGrab = Settings.AutoGrab
-    getgenv().TweenSpeed = Settings.TweenSpeed
-    getgenv().AntiAfk = Settings.AntiAfk
-    getgenv().WebhookLink = Settings.WebhookLink
-    getgenv().AutoWeb = Settings.AutoWeb
-end
