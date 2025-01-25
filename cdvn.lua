@@ -21,7 +21,7 @@ LRM_INIT_SCRIPT(function()
     print("Global Key:", getgenv().Key)
 
 -- Set your script ID here. Replace with your actual script ID.
-    api.script_id = "b291479d7a831c39412c10e09cc92835"
+    api.script_id = "4aa3438fe1274380a7d25a7b705121b7"
 
 -- Get the user's key from the global environment
     local script_key = getgenv().Key
