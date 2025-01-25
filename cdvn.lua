@@ -17,7 +17,7 @@ if status and status.code == "KEY_VALID" then
     -- Key is valid, proceed with the script
     print("Welcome! Seconds left: " .. (status.data.auth_expire - os.time()))
     print("Is key from ad system? " .. (status.data.note == "Ad Reward" and "YES" or "NO"))
-    api.load_script()
+    loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/4aa3438fe1274380a7d25a7b705121b7.lua"))()
     -- Load your actual script or loader here
 
 elseif status and status.code == "KEY_HWID_LOCKED" then
