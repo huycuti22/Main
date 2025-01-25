@@ -11,48 +11,10 @@ local HttpService = game:GetService('HttpService')
 local player = game.Players.LocalPlayer
 
 
-
 LRM_INIT_SCRIPT(function()
-    local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
--- Ensure the API loaded successfully
-
-
--- Print the globally set key
-    print("Global Key:", getgenv().Key)
-
--- Set your script ID here. Replace with your actual script ID.
-    api.script_id = "4aa3438fe1274380a7d25a7b705121b7"
-
--- Get the user's key from the global environment
-    local script_key = getgenv().Key
-    local status = api.check_key(script_key); -- pass 32-char user key here
-    print(status) --> table {code:<string>, message:<string>, data?:<table>}
-
--- custom logic below:
-    if (status.code == "KEY_VALID") then
-
-    -- fetch basic info about the key (only if KEY_VALID)
-        print("Welcome. Seconds left: " .. (status.data.auth_expire - os.time()))
-   
-        print("Is key from ad system? " .. status.data.note == "Ad Reward" and "YES" or "NO")
-    
-        script_key = script_key; -- SET THE KEY BEFORE LOADSTRINGING.
-    
-        api.load_script(); -- Executes the script, based on the script_id you put above.
-    -- Alternatively, you can just put the loadstring you got from luarmor website.
-    -- You must specify the script_key global either way.
-        return
-    
-    elseif (status.code == "KEY_HWID_LOCKED") then
-        return
-    
-    elseif (status.code == "KEY_INCORRECT") then
-        return    
-    else
-    -- fallback to anything else e.g blacklisted, key empty/too short:
-        player:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
-    end
+    print("Hello, world!")
 end)
+
 
 
 
