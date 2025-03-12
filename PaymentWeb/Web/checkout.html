@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 50px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        p {
+            color: #555;
+            font-size: 18px;
+        }
+        .price {
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 20px;
+        }
+        .checkout-button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            border: none;
+        }
+        .checkout-button:hover {
+            background-color: #219150;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Checkout</h1>
+        <p>Product: <strong>{{ product }}</strong></p>
+        <p>Description: <strong>{{ description }}</strong></p>
+        <p class="price">Price: <strong>{{ price }}</strong> VND</p>
+        <button class="checkout-button" id="submit">Proceed to Payment</button>
+    </div>
+
+    <script>
+      const product = "{{ product }}";
+      const description = "{{ description }}";
+      const price = "{{ price }}";
+
+      document.getElementById('submit').addEventListener('click', async function() {
+          const response = await fetch('/create_payment_link', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ product: product, description: description, price: price })
+          });
+          const payment = await response.json();
+          if (payment.checkoutUrl) {
+              window.location.href = payment.checkoutUrl;
+          } else {
+              alert("Payment Error: " + payment.error);
+          }
+      });
+    </script>
+</body>
+</html>
